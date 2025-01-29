@@ -1,11 +1,11 @@
-class GF256 {
+export class GF256 {
   static FIELD_SIZE = 256;
   static PRIMITIVE_POLY = 0x11d; // x^8 + x^4 + x^3 + x + 1
 
   static LOG_TABLE = GF256.initLogTable();
   static EXP_TABLE = GF256.initExpTable();
 
-  static initLogTable() {
+  private static initLogTable(): number[] {
     const table = new Array(256).fill(0);
     let x = 1;
     for (let i = 0; i < 255; i++) {
@@ -15,7 +15,7 @@ class GF256 {
     return table;
   }
 
-  static initExpTable() {
+  private static initExpTable(): number[] {
     const table = new Array(256).fill(0);
     let x = 1;
     for (let i = 0; i < 255; i++) {
@@ -26,7 +26,7 @@ class GF256 {
     return table;
   }
 
-  static multiplyWithoutTables(a, b) {
+  private static multiplyWithoutTables(a: number, b: number): number {
     let result = 0;
     let temp = b;
 
@@ -44,7 +44,7 @@ class GF256 {
     return result;
   }
 
-  static multiply(a, b) {
+  static multiply(a: Uint8Array | number, b: Uint8Array | number): Uint8Array {
     const aNum = a instanceof Uint8Array ? a[0] : a;
     const bNum = b instanceof Uint8Array ? b[0] : b;
 
@@ -57,17 +57,17 @@ class GF256 {
     return new Uint8Array([this.EXP_TABLE[sumLog]]);
   }
 
-  static add(a, b) {
+  static add(a: Uint8Array | number, b: Uint8Array | number): Uint8Array {
     const aNum = a instanceof Uint8Array ? a[0] : a;
     const bNum = b instanceof Uint8Array ? b[0] : b;
     return new Uint8Array([aNum ^ bNum]);
   }
 
-  static subtract(a, b) {
+  static subtract(a: Uint8Array | number, b: Uint8Array | number): Uint8Array {
     return this.add(a, b); // In GF(256), addition and subtraction are the same
   }
 
-  static pow(base, exp) {
+  static pow(base: Uint8Array | number, exp: number): Uint8Array {
     const baseNum = base instanceof Uint8Array ? base[0] : base;
     if (baseNum === 0) return new Uint8Array([0]);
     if (exp === 0) return new Uint8Array([1]);
@@ -77,7 +77,7 @@ class GF256 {
     return new Uint8Array([this.EXP_TABLE[resultLog]]);
   }
 
-  static inverse(a) {
+  static inverse(a: Uint8Array | number): Uint8Array {
     const aNum = a instanceof Uint8Array ? a[0] : a;
     if (aNum === 0) throw new Error("Division by zero");
     if (aNum === 1) return new Uint8Array([1]);
@@ -87,5 +87,3 @@ class GF256 {
     return new Uint8Array([this.EXP_TABLE[invLog]]);
   }
 }
-
-module.exports = { GF256 };

@@ -1,9 +1,10 @@
-const KeyManager = require("./keyManager");
-require("dotenv").config();
+import { config } from "dotenv";
+import { KeyManager } from "./keyManager";
+
+config();
 
 async function main() {
   try {
-    // Get the private key from environment variables
     const privateKey = process.env.PRIVATE_KEY;
     if (!privateKey) {
       throw new Error("PRIVATE_KEY not found in environment variables");
@@ -31,7 +32,7 @@ async function main() {
     ]);
     console.log("\nReconstructed Key with New Share:", reconstructedWithNew);
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error("Error:", (error as Error).message);
   }
 }
 
