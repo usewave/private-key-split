@@ -18,6 +18,7 @@ async function main() {
 
     // Reconstruct using 2 shares
     const reconstructedKey = KeyManager.combineShares(shares.slice(0, 2));
+    // const reconstructedKey = KeyManager.combineShares(dummShare as any);
     console.log("\nReconstructed Key:", reconstructedKey);
 
     // Generate a new share using two existing shares

@@ -1,4 +1,5 @@
 import { config } from "dotenv";
+
 import { KeySharing } from "./keySharing";
 import { Share } from "./types";
 
@@ -7,8 +8,8 @@ config();
 export class KeyManager {
   static splitKey(
     privateKey: string,
-    totalShares: number,
-    threshold: number
+    totalShares: number = 3,
+    threshold: number = 2
   ): Share[] {
     try {
       if (!privateKey) {
@@ -25,8 +26,8 @@ export class KeyManager {
         throw new Error("Threshold must be at least 2");
       }
 
-      const privateKeyBytes = new TextEncoder().encode(privateKey);
-      const shares = KeySharing.split(privateKeyBytes);
+      const secretBytes = new TextEncoder().encode(privateKey);
+      const shares = KeySharing.split(secretBytes);
 
       return shares.map((share) => ({
         ...share,

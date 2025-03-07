@@ -1,18 +1,29 @@
-import crypto from "crypto";
+import CryptoJS from "crypto-js";
 import { GF256 } from "./gf256";
 import { Share, ShareType } from "./types";
 
 export class KeySharing {
   static getSecureRandomByte(): number {
-    return crypto.randomBytes(1)[0];
+    const randomBytes = new Uint8Array(1);
+    crypto.getRandomValues(randomBytes);
+    return randomBytes[0];
   }
 
   static calculateShareHash(share: Share): string {
-    const hash = crypto.createHash("sha256");
-    hash.update(Buffer.from([share.x]));
-    hash.update(share.y as Uint8Array);
+    // Convert share data to WordArray
+    const xData = CryptoJS.lib.WordArray.create([share.x]);
+    const yData =
+      share.y instanceof Uint8Array
+        ? CryptoJS.lib.WordArray.create(Array.from(share.y))
+        : CryptoJS.enc.Hex.parse(share.y as string);
+
+    // Create hash
+    const hash = CryptoJS.algo.SHA256.create();
+    hash.update(xData);
+    hash.update(yData);
     hash.update(share.type);
-    return hash.digest("hex");
+
+    return hash.finalize().toString(CryptoJS.enc.Hex);
   }
 
   static split(privateKey: Uint8Array): Share[] {
@@ -59,10 +70,17 @@ export class KeySharing {
   static verifyShare(share: Share): boolean {
     if (!share.hash) return false;
     const calculatedHash = this.calculateShareHash(share);
-    return crypto.timingSafeEqual(
-      Buffer.from(calculatedHash, "hex"),
-      Buffer.from(share.hash, "hex")
-    );
+
+    // Constant-time comparison to prevent timing attacks
+    if (calculatedHash.length !== share.hash.length) {
+      return false;
+    }
+
+    let result = 0;
+    for (let i = 0; i < calculatedHash.length; i++) {
+      result |= calculatedHash.charCodeAt(i) ^ share.hash.charCodeAt(i);
+    }
+    return result === 0;
   }
 
   static reconstruct(shares: Share[]): Uint8Array {
